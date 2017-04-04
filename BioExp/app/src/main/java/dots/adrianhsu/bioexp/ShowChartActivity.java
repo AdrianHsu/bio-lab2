@@ -103,21 +103,25 @@ public class ShowChartActivity extends AppCompatActivity {
         // Discovery is resource intensive.  Make sure it isn't going on
         // when you attempt to connect and pass your message.
 
-        btAdapter.cancelDiscovery();
+//        btAdapter.cancelDiscovery();
 
         // Establish the connection.  This will block until it connects.
         Log.d(TAG, "...Connecting...");
         try {
             btSocket.connect();
-            Log.d(TAG, "....Connection ok...");
+            Log.e(TAG,"Connected");
         } catch (IOException e) {
-            Log.d(TAG, e.getMessage());
-            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-
+            Log.e("",e.getMessage());
             try {
-                btSocket.close();
-            } catch (IOException e2) {
-                errorExit("Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                Log.e(TAG,"trying fallback...");
+
+                btSocket =(BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
+                btSocket.connect();
+
+                Log.e(TAG,"Connected");
+            }
+            catch (Exception e2) {
+                Log.e(TAG, "Couldn't establish Bluetooth connection!");
             }
         }
 
@@ -176,7 +180,7 @@ public class ShowChartActivity extends AppCompatActivity {
 
             Log.d(TAG, "2. in ConnectedThread");
             mmInStream = tmpIn;
-            run();
+
         }
 
         public void run() {
@@ -188,9 +192,13 @@ public class ShowChartActivity extends AppCompatActivity {
             while (true) {
                 try {
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);        // Get number of bytes and message in "buffer"
-                    Log.d(TAG, "run, bytes is: " + bytes);
-                    h.obtainMessage(RECIEVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
+                    if(mmInStream.available() > 0 ) {
+                        bytes = mmInStream.read(buffer);        // Get number of bytes and message in "buffer"
+                        Log.d(TAG, "run, bytes is: " + bytes);
+                        h.obtainMessage(RECIEVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
+                    } else {
+                        Log.d(TAG, "stream not available");
+                    }
                 } catch (IOException e) {
                     Log.d(TAG, e.getMessage());
                     break;
