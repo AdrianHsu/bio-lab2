@@ -4,9 +4,12 @@ package dots.adrianhsu.bioexp;
  * Created by adrianhsu on 2017/4/4.
  */
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
@@ -32,7 +35,7 @@ public class ShowChartActivity extends AppCompatActivity {
     TextView txtArduino;
     Handler h;
 
-    final int RECIEVE_MESSAGE = 1;        // Status  for Handler
+    final int RECEIVE_MESSAGE = 1;        // Status  for Handler
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private StringBuilder sb = new StringBuilder();
@@ -43,7 +46,7 @@ public class ShowChartActivity extends AppCompatActivity {
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     // MAC-address of Bluetooth module (you must edit this line)
-    private static String address = "20:15:05:22:68:86";
+    private static String address = "98:D3:31:40:0E:48";
 
     /** Called when the activity is first created. */
     @Override
@@ -60,18 +63,16 @@ public class ShowChartActivity extends AppCompatActivity {
 
                 switch (msg.what) {
 
-                    case RECIEVE_MESSAGE:                                                   // if receive massage
-                        byte[] readBuf = (byte[]) msg.obj;
-                        String strIncom = new String(readBuf, 0, msg.arg1);                 // create string from bytes array
-                        sb.append(strIncom);                                                // append string
-                        int endOfLineIndex = sb.indexOf("\r\n");                            // determine the end-of-line
-                        if (endOfLineIndex > 0) {                                            // if end-of-line,
-                            String sbprint = sb.substring(0, endOfLineIndex);               // extract string
-                            sb.delete(0, sb.length());                                      // and clear
-                            String tmp = "Data from Arduino: " + sbprint;
-                            txtArduino.setText(tmp);            // update TextView
-                        }
-                        Log.d(TAG, "...String:" + sb.toString() +  "Byte:" + msg.arg1 + "...");
+                    case RECEIVE_MESSAGE:                                                   // if receive massage
+                        char[] readBuf = (char[]) msg.obj;
+                        String strIncom = null;                 // create string from bytes array
+//                        try {
+//                            strIncom = new String(readBuf, 0, msg.arg1, "UTF-8");
+//                        } catch (UnsupportedEncodingException e) {
+//                            e.printStackTrace();
+//                        }
+                        Log.d(TAG, "strIncom: " + readBuf);
+
                         break;
                 }
             }
@@ -111,23 +112,11 @@ public class ShowChartActivity extends AppCompatActivity {
             btSocket.connect();
             Log.e(TAG,"Connected");
         } catch (IOException e) {
-            Log.e("",e.getMessage());
-            try {
-                Log.e(TAG,"trying fallback...");
-
-                btSocket =(BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
-                btSocket.connect();
-
-                Log.e(TAG,"Connected");
-            }
-            catch (Exception e2) {
-                Log.e(TAG, "Couldn't establish Bluetooth connection!");
-            }
+            Log.e(TAG,e.getMessage());
         }
 
         // Create a data stream so we can talk to server.
         Log.d(TAG, "...Create Socket...");
-
         mConnectedThread = new ConnectedThread(btSocket);
         mConnectedThread.start();
     }
@@ -176,11 +165,12 @@ public class ShowChartActivity extends AppCompatActivity {
             // member streams are final
             try {
                 tmpIn = socket.getInputStream();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+                Log.d(TAG, e.getMessage());
+            }
 
             Log.d(TAG, "2. in ConnectedThread");
             mmInStream = tmpIn;
-
         }
 
         public void run() {
@@ -192,13 +182,15 @@ public class ShowChartActivity extends AppCompatActivity {
             while (true) {
                 try {
                     // Read from the InputStream
-                    if(mmInStream.available() > 0 ) {
-                        bytes = mmInStream.read(buffer);        // Get number of bytes and message in "buffer"
-                        Log.d(TAG, "run, bytes is: " + bytes);
-                        h.obtainMessage(RECIEVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
-                    } else {
-                        Log.d(TAG, "stream not available");
-                    }
+//                    if(mmInStream.available() > 0 ) {
+                        int bytesRead = mmInStream.read(buffer);
+                        String page = new String(buffer, 0, bytesRead, "UTF-8");
+
+                        Log.d(TAG, "run, bytes is: " + page);
+//                        h.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
+//                    } else {
+//                        Log.d(TAG, "stream not available");
+//                    }
                 } catch (IOException e) {
                     Log.d(TAG, e.getMessage());
                     break;
