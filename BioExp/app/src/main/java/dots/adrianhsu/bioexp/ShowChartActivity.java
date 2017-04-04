@@ -30,6 +30,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.io.IOUtils;
+
 public class ShowChartActivity extends AppCompatActivity {
     private static final String TAG = "bluetooth";
     TextView txtArduino;
@@ -64,14 +66,14 @@ public class ShowChartActivity extends AppCompatActivity {
                 switch (msg.what) {
 
                     case RECEIVE_MESSAGE:                                                   // if receive massage
-                        char[] readBuf = (char[]) msg.obj;
+                        byte[] readBuf = (byte[]) msg.obj;
                         String strIncom = null;                 // create string from bytes array
-//                        try {
-//                            strIncom = new String(readBuf, 0, msg.arg1, "UTF-8");
-//                        } catch (UnsupportedEncodingException e) {
-//                            e.printStackTrace();
-//                        }
-                        Log.d(TAG, "strIncom: " + readBuf);
+                        try {
+                            strIncom = new String(readBuf, 0, msg.arg1, "US-ASCII");
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d(TAG, "strIncom: " + strIncom);
 
                         break;
                 }
@@ -183,11 +185,9 @@ public class ShowChartActivity extends AppCompatActivity {
                 try {
                     // Read from the InputStream
 //                    if(mmInStream.available() > 0 ) {
-                        int bytesRead = mmInStream.read(buffer);
-                        String page = new String(buffer, 0, bytesRead, "UTF-8");
-
-                        Log.d(TAG, "run, bytes is: " + page);
-//                        h.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
+//                    mmInStream.read();
+                    bytes = IOUtils.read(mmInStream, buffer);
+                    h.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
 //                    } else {
 //                        Log.d(TAG, "stream not available");
 //                    }
