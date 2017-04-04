@@ -3,5 +3,5 @@
     <string name="team_member">電機三 許秉鈞 蔡承佑 許博竣</string>
     <string name="main_title">生醫實驗第五組, Lab 2</string>
     <string name="btlist_title">請選擇您的 Arduino BLE 開發板</string>
-
+    <string name="ble_warning">Adrian: If no devices are listed please pair your device in Android settings</string>
 </resources>
