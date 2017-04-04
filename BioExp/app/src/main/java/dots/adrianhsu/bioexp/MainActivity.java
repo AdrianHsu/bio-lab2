@@ -10,7 +10,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
 
     Button btlistBtn;
-    Button ledTurnOnBtn;
+    Button showChartBtn;
     Button disconBtn;
 
     @Override
@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         btlistBtn = (Button) findViewById(R.id.btlistBtn);
-        ledTurnOnBtn = (Button) findViewById(R.id.ledTurnOnBtn);
+        showChartBtn = (Button) findViewById(R.id.showChartBtn);
         disconBtn = (Button) findViewById(R.id.disconBtn);
         btlistBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -28,7 +28,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
+        showChartBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent;
+                intent = new Intent(getApplicationContext(), ShowChartActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 }

@@ -21,18 +21,16 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onBTListClicked"
         android:text="BTList"
         tools:layout_editor_absoluteX="147dp"
         tools:layout_editor_absoluteY="37dp" />
 
     <Button
-        android:id="@+id/ledTurnOnBtn"
+        android:id="@+id/showChartBtn"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onLEDTurnOnClicked"
-        android:text="LED-TurnOn"
+        android:text="SHOW-CHART"
         tools:layout_editor_absoluteX="137dp"
         tools:layout_editor_absoluteY="109dp" />
 
@@ -41,7 +39,6 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onDisconnectClicked"
         android:text="Disconnect"
         tools:layout_editor_absoluteX="137dp"
         tools:layout_editor_absoluteY="178dp" />

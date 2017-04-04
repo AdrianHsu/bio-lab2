@@ -12,12 +12,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class BtlistActivity extends AppCompatActivity {
+    //An EXTRA to take the device MAC to the next activity
+    public static String EXTRA_DEVICE_ADDRESS;
 
     // textview for connection status
     TextView textConnectionStatus;
@@ -42,6 +45,7 @@ public class BtlistActivity extends AppCompatActivity {
         // Find and set up the ListView for paired devices
         pairedListView = (ListView) findViewById(R.id.paired_devices);
         pairedListView.setAdapter(mPairedDevicesArrayAdapter);
+        pairedListView.setOnItemClickListener(mDeviceClickListener);
 
     }
 
@@ -90,6 +94,22 @@ public class BtlistActivity extends AppCompatActivity {
             }
         }
     }
+    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener()
+    {
+        public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3)
+        {
+            textConnectionStatus.setText("Connecting...");
+            // Get the device MAC address, which is the last 17 chars in the View
+            String info = ((TextView) v).getText().toString();
+            String address = info.substring(info.length() - 17);
+
+            // Make an intent to start next activity while taking an extra which is the MAC address.
+            Intent i = new Intent(BtlistActivity.this, MainActivity.class);
+            i.putExtra(EXTRA_DEVICE_ADDRESS, address);
+            startActivity(i);
+        }
+    };
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
