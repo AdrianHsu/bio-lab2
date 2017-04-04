@@ -28,7 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ShowChartActivity extends AppCompatActivity {
-    private static final String TAG = "bluetooth2";
+    private static final String TAG = "bluetooth";
     TextView txtArduino;
     Handler h;
 
@@ -49,7 +49,6 @@ public class ShowChartActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_show_chart);
 
         txtArduino = (TextView) findViewById(R.id.txtArduino);      // for display the received data from the Arduino
@@ -75,25 +74,12 @@ public class ShowChartActivity extends AppCompatActivity {
                         Log.d(TAG, "...String:" + sb.toString() +  "Byte:" + msg.arg1 + "...");
                         break;
                 }
-            };
+            }
         };
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
     }
-
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-        if(Build.VERSION.SDK_INT >= 10){
-            try {
-                final Method  m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", new Class[] { UUID.class });
-                return (BluetoothSocket) m.invoke(device, MY_UUID);
-            } catch (Exception e) {
-                Log.e(TAG, "Could not create Insecure RFComm Connection",e);
-            }
-        }
-        return  device.createRfcommSocketToServiceRecord(MY_UUID);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -109,7 +95,7 @@ public class ShowChartActivity extends AppCompatActivity {
         //     UUID for SPP.
 
         try {
-            btSocket = createBluetoothSocket(device);
+            btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
         } catch (IOException e) {
             errorExit("Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
         }
