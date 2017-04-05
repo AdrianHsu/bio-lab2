@@ -30,6 +30,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 public class ShowChartActivity extends AppCompatActivity {
     private static final String TAG = "bluetooth";
@@ -123,6 +124,27 @@ public class ShowChartActivity extends AppCompatActivity {
             Log.e(TAG,e.getMessage());
         }
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i = 0; i < 100; i++) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            addEntry();
+                            Log.d(TAG, "addEntry");
+                        }
+                    });
+                    try {
+                        Thread.sleep(600);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+
         // Create a data stream so we can talk to server.
         Log.d(TAG, "...Create Socket...");
         mConnectedThread = new ConnectedThread(btSocket);
@@ -167,13 +189,30 @@ public class ShowChartActivity extends AppCompatActivity {
         if(d != null) {
             ILineDataSet set = d.getDataSetByIndex(0);
             if(set == null) {
-//                set = createSet();
+                set = createSet();
                 d.addDataSet(set);
             }
 //            d.addXValue("");
             d.addEntry(new Entry((float)(Math.random() * 75) + 60f, set.getEntryCount()), 0);
             mChart.notifyDataSetChanged();
+            Log.d(TAG, "notify change");
+            mChart.setVisibleXRange(0,6);
+            mChart.moveViewToX(d.getEntryCount() - 7);
         }
+    }
+    private LineDataSet createSet() {
+        LineDataSet set = new LineDataSet(null, "adrian");
+        set.setCubicIntensity(0.2f);
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set.setColor(ColorTemplate.getHoloBlue());
+        set.setCircleColor(ColorTemplate.getHoloBlue());
+        set.setLineWidth(2f);
+        set.setFillAlpha(65);
+        set.setFillColor(ColorTemplate.getHoloBlue());
+        set.setHighLightColor(Color.rgb(244,117,177));
+        set.setValueTextColor(Color.WHITE);
+        set.setValueTextSize(10f);
+        return set;
     }
 
     private class ConnectedThread extends Thread {
