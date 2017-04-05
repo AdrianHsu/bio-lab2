@@ -7,6 +7,7 @@ package dots.adrianhsu.bioexp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothAdapter;
@@ -37,6 +38,8 @@ public class ShowChartActivity extends AppCompatActivity {
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private ConnectedThread mConnectedThread;
+    private ArrayList<Integer> mydata;
+    private int CURRENT_INDEX = 0;
 
     private RelativeLayout mainLayout;
     private LineChart mChart;
@@ -55,7 +58,7 @@ public class ShowChartActivity extends AppCompatActivity {
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
-
+        mydata = new ArrayList<>();
         mChart = (LineChart) findViewById(R.id.chart1);
 
         mChart.setHighlightPerTapEnabled(true);
@@ -84,7 +87,7 @@ public class ShowChartActivity extends AppCompatActivity {
 
         YAxis y1 = mChart.getAxisLeft();
         y1.setTextColor(Color.WHITE);
-//        y1.setAxisMaximum(120f);
+        y1.setAxisMaximum(1000f);
         y1.setDrawGridLines(true);
 
         YAxis y12 = mChart.getAxisRight();
@@ -131,12 +134,11 @@ public class ShowChartActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            addEntry();
-                            Log.d(TAG, "addEntry");
+                            boolean tmp = addEntry();
                         }
                     });
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(3g0);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -154,9 +156,7 @@ public class ShowChartActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-
         Log.d(TAG, "...In onPause()...");
-
         try     {
             btSocket.close();
         } catch (IOException e2) {
@@ -184,23 +184,44 @@ public class ShowChartActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
         finish();
     }
-    private void addEntry() {
+    private boolean addEntry() {
+        if(mydata.isEmpty()) {
+            Log.d(TAG, "azzzz");
+            return false;
+        }
         LineData d = mChart.getData();
         if(d != null) {
             ILineDataSet set = d.getDataSetByIndex(0);
             if(set == null) {
                 set = createSet();
                 d.addDataSet(set);
+            } else if (mydata.size() == CURRENT_INDEX) {
+                return false;
             }
-//            d.addXValue("");
-            d.addEntry(new Entry(set.getEntryCount(), set.getEntryCount()), 0);
-            mChart.notifyDataSetChanged();
-            Log.d(TAG, "notify change");
-            mChart.setVisibleXRange(0,6);
-            mChart.moveViewToX(d.getEntryCount() - 7);
-        } else {
-            Log.d(TAG, "data is null!!!");
+//            if(mydata == null) {
+//                Log.d(TAG, "mydata is null!!");
+//            } else if (mydata.isEmpty()) {
+//                Log.d(TAG, "mydata size == 0!!");
+//            } else if( mydata.size() > set.getEntryCount()) {
+////            d.addXValue("");
+//                Log.d(TAG, "????" + mydata.size());
+//                Log.d(TAG, "xxxx" + CURRENT_INDEX);
+//                Log.d(TAG, "!!!!" + set.getEntryCount());
+
+                int result = mydata.get(CURRENT_INDEX++);
+                Log.d(TAG, "mydata is :" + result);
+
+//                result = set.getEntryCount();
+                Log.d(TAG, "result is :" + result);
+                d.addEntry(new Entry(set.getEntryCount(), result), 0);
+                mChart.notifyDataSetChanged();
+                Log.d(TAG, "CURRENT_INDEX: " + CURRENT_INDEX + ", Entry count: " + set.getEntryCount());
+                mChart.setVisibleXRange(0, 25);
+                mChart.moveViewToX(d.getEntryCount() - 26);
+                return true;
+//            }
         }
+        return false;
     }
     private LineDataSet createSet() {
         LineDataSet set = new LineDataSet(null, "adrian");
@@ -251,8 +272,20 @@ public class ShowChartActivity extends AppCompatActivity {
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-//                    Log.d(TAG, strIncom);
+                    Log.d(TAG, strIncom);
+                    int result = 0;
+                    boolean isvalid = false;
 
+                    try {
+                        result = Integer.parseInt(strIncom);
+                        isvalid = true;
+                    } catch(NumberFormatException nfe) {
+                        System.out.println("Could not parse " + nfe);
+                    }
+                    if(isvalid && result < 10000) {
+                        mydata.add(result);
+                    } else {
+                    }
                 } catch (IOException e) {
                     Log.d(TAG, e.getMessage());
                     break;
