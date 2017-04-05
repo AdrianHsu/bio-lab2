@@ -185,9 +185,15 @@ public class ShowChartActivity extends AppCompatActivity {
                 try {
                     // Read from the InputStream
 //                    if(mmInStream.available() > 0 ) {
-//                    mmInStream.read();
-                    bytes = IOUtils.read(mmInStream, buffer);
-                    h.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
+                    bytes = mmInStream.read(buffer);
+                    String strIncom = null;                 // create string from bytes array
+                    try {
+                        strIncom = new String(buffer, 0, bytes, "US-ASCII");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d(TAG, strIncom);
+//                    h.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
 //                    } else {
 //                        Log.d(TAG, "stream not available");
 //                    }
