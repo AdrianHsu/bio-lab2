@@ -40,8 +40,7 @@ public class ShowChartActivity extends AppCompatActivity {
     private ConnectedThread mConnectedThread;
     private ArrayList<Integer> mydata;
     private int CURRENT_INDEX = 0;
-
-    private RelativeLayout mainLayout;
+    final private int BIAS_PARAMETER = 100;
     private LineChart mChart;
 
     // SPP UUID service
@@ -69,7 +68,7 @@ public class ShowChartActivity extends AppCompatActivity {
         mChart.setPinchZoom(true);
         mChart.setBackgroundColor(Color.LTGRAY);
         Description des = new Description();
-        des.setText("line chart");
+        des.setText("ECG/EEG Line Chart");
         mChart.setDescription(des);
         mChart.setNoDataText("no data");
 
@@ -80,6 +79,7 @@ public class ShowChartActivity extends AppCompatActivity {
         Legend l = mChart.getLegend();
         l.setForm(Legend.LegendForm.LINE);
         l.setTextColor(Color.WHITE);
+
         XAxis x1 = mChart.getXAxis();
         x1.setTextColor(Color.WHITE);
         x1.setDrawGridLines(false);
@@ -87,7 +87,7 @@ public class ShowChartActivity extends AppCompatActivity {
 
         YAxis y1 = mChart.getAxisLeft();
         y1.setTextColor(Color.WHITE);
-        y1.setAxisMaximum(1000f);
+//        y1.setAxisMaximum(1000f);
         y1.setDrawGridLines(true);
 
         YAxis y12 = mChart.getAxisRight();
@@ -138,7 +138,7 @@ public class ShowChartActivity extends AppCompatActivity {
                         }
                     });
                     try {
-                        Thread.sleep(3g0);
+                        Thread.sleep(30);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -198,34 +198,25 @@ public class ShowChartActivity extends AppCompatActivity {
             } else if (mydata.size() == CURRENT_INDEX) {
                 return false;
             }
-//            if(mydata == null) {
-//                Log.d(TAG, "mydata is null!!");
-//            } else if (mydata.isEmpty()) {
-//                Log.d(TAG, "mydata size == 0!!");
-//            } else if( mydata.size() > set.getEntryCount()) {
-////            d.addXValue("");
-//                Log.d(TAG, "????" + mydata.size());
-//                Log.d(TAG, "xxxx" + CURRENT_INDEX);
-//                Log.d(TAG, "!!!!" + set.getEntryCount());
-
-                int result = mydata.get(CURRENT_INDEX++);
-                Log.d(TAG, "mydata is :" + result);
-
-//                result = set.getEntryCount();
-                Log.d(TAG, "result is :" + result);
-                d.addEntry(new Entry(set.getEntryCount(), result), 0);
-                mChart.notifyDataSetChanged();
-                Log.d(TAG, "CURRENT_INDEX: " + CURRENT_INDEX + ", Entry count: " + set.getEntryCount());
-                mChart.setVisibleXRange(0, 25);
-                mChart.moveViewToX(d.getEntryCount() - 26);
-                return true;
-//            }
+            int result = mydata.get(CURRENT_INDEX++);
+            Log.d(TAG, "result is :" + result);
+            if(result < BIAS_PARAMETER) { // bias
+                return false;
+            }
+            d.addEntry(new Entry(set.getEntryCount(), result), 0);
+            mChart.notifyDataSetChanged();
+            Log.d(TAG, "CURRENT_INDEX: " + CURRENT_INDEX + ", Entry count: " + set.getEntryCount());
+            mChart.setVisibleXRange(0, 25);
+            mChart.moveViewToX(d.getEntryCount() - 26);
+            return true;
         }
         return false;
     }
     private LineDataSet createSet() {
-        LineDataSet set = new LineDataSet(null, "adrian");
+        LineDataSet set = new LineDataSet(null, "CHANNEL 0");
         set.setCubicIntensity(0.2f);
+//        set.setDrawCircles(false); //
+        set.setDrawValues(false); //
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(ColorTemplate.getHoloBlue());
         set.setCircleColor(ColorTemplate.getHoloBlue());
