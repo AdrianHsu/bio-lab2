@@ -4,45 +4,41 @@ package dots.adrianhsu.bioexp;
  * Created by adrianhsu on 2017/4/4.
  */
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.util.UUID;
 
-
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.os.Build;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.commons.io.IOUtils;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 public class ShowChartActivity extends AppCompatActivity {
     private static final String TAG = "bluetooth";
-    TextView txtArduino;
-    Handler h;
-
-    final int RECEIVE_MESSAGE = 1;        // Status  for Handler
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
-    private StringBuilder sb = new StringBuilder();
-
     private ConnectedThread mConnectedThread;
+
+    private RelativeLayout mainLayout;
+    private LineChart mChart;
 
     // SPP UUID service
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -56,32 +52,42 @@ public class ShowChartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_chart);
 
-        txtArduino = (TextView) findViewById(R.id.txtArduino);      // for display the received data from the Arduino
-
-        Log.d(TAG, "handler should work now.");
-        h = new Handler() {
-            public void handleMessage(android.os.Message msg) {
-                Log.d(TAG, "in handleMessage");
-
-                switch (msg.what) {
-
-                    case RECEIVE_MESSAGE:                                                   // if receive massage
-                        byte[] readBuf = (byte[]) msg.obj;
-                        String strIncom = null;                 // create string from bytes array
-                        try {
-                            strIncom = new String(readBuf, 0, msg.arg1, "US-ASCII");
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d(TAG, "strIncom: " + strIncom);
-
-                        break;
-                }
-            }
-        };
-
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
+
+        mChart = (LineChart) findViewById(R.id.chart1);
+
+        mChart.setHighlightPerTapEnabled(true);
+        mChart.setTouchEnabled(true);
+        mChart.setDragEnabled(true);
+        mChart.setScaleEnabled(true);
+        mChart.setDrawGridBackground(false);
+        mChart.setPinchZoom(true);
+        mChart.setBackgroundColor(Color.LTGRAY);
+        Description des = new Description();
+        des.setText("line chart");
+        mChart.setDescription(des);
+        mChart.setNoDataText("no data");
+
+        LineData d = new LineData();
+        d.setValueTextColor(Color.WHITE);
+        mChart.setData(d);
+
+        Legend l = mChart.getLegend();
+        l.setForm(Legend.LegendForm.LINE);
+        l.setTextColor(Color.WHITE);
+        XAxis x1 = mChart.getXAxis();
+        x1.setTextColor(Color.WHITE);
+        x1.setDrawGridLines(false);
+        x1.setAvoidFirstLastClipping(true);
+
+        YAxis y1 = mChart.getAxisLeft();
+        y1.setTextColor(Color.WHITE);
+        y1.setAxisMaximum(120f);
+        y1.setDrawGridLines(true);
+
+        YAxis y12 = mChart.getAxisRight();
+        y12.setEnabled(false);
     }
     @Override
     public void onResume() {
@@ -156,6 +162,19 @@ public class ShowChartActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
         finish();
     }
+    private void addEntry() {
+        LineData d = mChart.getData();
+        if(d != null) {
+            ILineDataSet set = d.getDataSetByIndex(0);
+            if(set == null) {
+//                set = createSet();
+                d.addDataSet(set);
+            }
+//            d.addXValue("");
+            d.addEntry(new Entry((float)(Math.random() * 75) + 60f, set.getEntryCount()), 0);
+            mChart.notifyDataSetChanged();
+        }
+    }
 
     private class ConnectedThread extends Thread {
         private final InputStream mmInStream;
@@ -184,7 +203,6 @@ public class ShowChartActivity extends AppCompatActivity {
             while (true) {
                 try {
                     // Read from the InputStream
-//                    if(mmInStream.available() > 0 ) {
                     bytes = mmInStream.read(buffer);
                     String strIncom = null;                 // create string from bytes array
                     try {
@@ -193,10 +211,7 @@ public class ShowChartActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     Log.d(TAG, strIncom);
-//                    h.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Send to message queue Handler
-//                    } else {
-//                        Log.d(TAG, "stream not available");
-//                    }
+
                 } catch (IOException e) {
                     Log.d(TAG, e.getMessage());
                     break;
