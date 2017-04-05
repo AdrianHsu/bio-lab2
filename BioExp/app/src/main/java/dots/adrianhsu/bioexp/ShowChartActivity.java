@@ -84,7 +84,7 @@ public class ShowChartActivity extends AppCompatActivity {
 
         YAxis y1 = mChart.getAxisLeft();
         y1.setTextColor(Color.WHITE);
-        y1.setAxisMaximum(120f);
+//        y1.setAxisMaximum(120f);
         y1.setDrawGridLines(true);
 
         YAxis y12 = mChart.getAxisRight();
@@ -127,7 +127,7 @@ public class ShowChartActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i = 0; i < 100; i++) {
+                while(true) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -136,13 +136,13 @@ public class ShowChartActivity extends AppCompatActivity {
                         }
                     });
                     try {
-                        Thread.sleep(600);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }
-        });
+        }).start();
 
 
         // Create a data stream so we can talk to server.
@@ -193,11 +193,13 @@ public class ShowChartActivity extends AppCompatActivity {
                 d.addDataSet(set);
             }
 //            d.addXValue("");
-            d.addEntry(new Entry((float)(Math.random() * 75) + 60f, set.getEntryCount()), 0);
+            d.addEntry(new Entry(set.getEntryCount(), set.getEntryCount()), 0);
             mChart.notifyDataSetChanged();
             Log.d(TAG, "notify change");
             mChart.setVisibleXRange(0,6);
             mChart.moveViewToX(d.getEntryCount() - 7);
+        } else {
+            Log.d(TAG, "data is null!!!");
         }
     }
     private LineDataSet createSet() {
@@ -243,13 +245,13 @@ public class ShowChartActivity extends AppCompatActivity {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
-                    String strIncom = null;                 // create string from bytes array
+                    String strIncom = "";                 // create string from bytes array
                     try {
                         strIncom = new String(buffer, 0, bytes, "US-ASCII");
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-                    Log.d(TAG, strIncom);
+//                    Log.d(TAG, strIncom);
 
                 } catch (IOException e) {
                     Log.d(TAG, e.getMessage());
