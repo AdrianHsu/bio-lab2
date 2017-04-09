@@ -124,8 +124,20 @@ public class ShowChartActivity extends AppCompatActivity {
             btSocket.connect();
             Log.e(TAG,"Connected");
         } catch (IOException e) {
-            Log.e(TAG,e.getMessage());
+            Log.e("",e.getMessage());
+            try {
+                Log.e(TAG,"trying fallback...");
+
+                btSocket =(BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
+                btSocket.connect();
+
+                Log.e(TAG,"Connected");
+            }
+            catch (Exception e2) {
+                Log.e(TAG, "Couldn't establish Bluetooth connection!");
+            }
         }
+
 
         new Thread(new Runnable() {
             @Override
@@ -206,8 +218,8 @@ public class ShowChartActivity extends AppCompatActivity {
             d.addEntry(new Entry(set.getEntryCount(), result), 0);
             mChart.notifyDataSetChanged();
             Log.d(TAG, "CURRENT_INDEX: " + CURRENT_INDEX + ", Entry count: " + set.getEntryCount());
-            mChart.setVisibleXRange(0, 25);
-            mChart.moveViewToX(d.getEntryCount() - 26);
+            mChart.setVisibleXRange(0, 200);
+            mChart.moveViewToX(d.getEntryCount() - 201);
             return true;
         }
         return false;
@@ -215,7 +227,7 @@ public class ShowChartActivity extends AppCompatActivity {
     private LineDataSet createSet() {
         LineDataSet set = new LineDataSet(null, "CHANNEL 0");
         set.setCubicIntensity(0.2f);
-//        set.setDrawCircles(false); //
+        set.setDrawCircles(false); //
         set.setDrawValues(false); //
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(ColorTemplate.getHoloBlue());
@@ -249,31 +261,32 @@ public class ShowChartActivity extends AppCompatActivity {
 
         public void run() {
             byte[] buffer = new byte[256];  // buffer store for the stream
-            int bytes; // bytes returned from read()
+            int [] bytes = new int[2]; // bytes returned from read()
             Log.d(TAG, "run");
 
             // Keep listening to the InputStream until an exception occurs
             while (true) {
                 try {
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    String strIncom = "";                 // create string from bytes array
-                    try {
-                        strIncom = new String(buffer, 0, bytes, "US-ASCII");
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    Log.d(TAG, strIncom);
-                    int result = 0;
-                    boolean isvalid = false;
-
-                    try {
-                        result = Integer.parseInt(strIncom);
-                        isvalid = true;
-                    } catch(NumberFormatException nfe) {
-                        System.out.println("Could not parse " + nfe);
-                    }
-                    if(isvalid && result < 10000) {
+                    // bytes[0] = mmInStream.read(buffer);
+                    // bytes[1] = mmInStream.read(buffer);
+                    int len = mmInStream.read(buffer,0,2);
+                    bytes[0] = buffer[0];
+                    bytes[1] = buffer[1];
+                    int diff = bytes[0];
+                    int mol = bytes[1];
+                    Log.d(TAG, "len = " + len);
+                    Log.d(TAG, "diff: " + diff);
+                    Log.d(TAG, "mol: " + mol);
+                    int result = diff * 128 + mol;
+//                    boolean isvalid = false;
+//                    try {
+//                        result = bytes;
+//                        isvalid = true;
+//                    } catch(NumberFormatException nfe) {
+//                        System.out.println("Could not parse " + nfe);
+//                    }
+                    if(result < 1024) {
                         mydata.add(result);
                     } else {
                     }

@@ -10,7 +10,7 @@ const int RX_PIN = 10; // 10
 const int TX_PIN = 11; // 11
 SoftwareSerial I2CBT(RX_PIN, TX_PIN);
 
-const int ANALOG_PIN = 1;     // potentiometer wiper (middle terminal) connected to analog pin 0
+const int ANALOG_PIN = A2;     // potentiometer wiper (middle terminal) connected to analog pin 0
                               // outside leads to ground and +5V
 int val = 0;                  // variable to store the value read
 
@@ -27,13 +27,19 @@ unsigned long time;
 void loop()
 {
     val = analogRead(ANALOG_PIN);    // read the input pin
+
     time=micros();
-    Serial.print("Current time: ");
-    Serial.println(time);
+    //Serial.print("Current time: ");
+    //Serial.println(time);
   //  Current time: 5336596 - 5309556 = 27040
   //  1000 * (1 / 27040) = 37hz
-
+    byte pack[2];
+    pack[0] = val/128;
+    pack[1] = val%128;
     String str = (String)val;
-    I2CBT.print(str);
-    Serial.println(str);
+    I2CBT.write(pack[0]);
+    I2CBT.write(pack[1]);
+    //Serial.println(pack[0]);
+    //Serial.println(pack[1]);
+    Serial.println(val);
 }
