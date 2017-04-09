@@ -150,7 +150,7 @@ public class ShowChartActivity extends AppCompatActivity {
                         }
                     });
                     try {
-                        Thread.sleep(30);
+                        Thread.sleep(5);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
