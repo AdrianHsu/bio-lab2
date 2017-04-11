@@ -150,7 +150,7 @@ public class ShowChartActivity extends AppCompatActivity {
                         }
                     });
                     try {
-                        Thread.sleep(5);
+                        Thread.sleep(2);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -271,6 +271,8 @@ public class ShowChartActivity extends AppCompatActivity {
                     // bytes[0] = mmInStream.read(buffer);
                     // bytes[1] = mmInStream.read(buffer);
                     int len = mmInStream.read(buffer,0,2);
+                    if (len < 2)
+                        mmInStream.read(buffer,1,1);
                     bytes[0] = buffer[0];
                     bytes[1] = buffer[1];
                     int diff = bytes[0];
